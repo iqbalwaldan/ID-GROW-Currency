@@ -15,4 +15,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    rollupOptions: {
+            input: {
+                index: "index.html",
+                table: "table.html",
+            }
+        }
+  }
 })
