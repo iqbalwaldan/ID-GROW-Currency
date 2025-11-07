@@ -12,61 +12,65 @@ const ticker = ref(props.initialTicker)
 const assumed = ref(props.initialAssumed)
 const converte = ref(props.initialConverte)
 
-const companyMap = {
-  AAPL: 'Apple Inc.',
-  MSFT: 'Microsoft Corporation',
-  AMZN: 'Amazon.com Inc.',
-  GOOGL: 'Alphabet Inc. (Google)',
-  META: 'Meta Platforms Inc. (Facebook)',
-  NVDA: 'NVIDIA Corporation',
-  TSLA: 'Tesla Inc.',
-  'BRK.B': 'Berkshire Hathaway Inc.',
-  V: 'Visa Inc.',
-  NFLX: 'Netflix Inc.'
-}
+const companyMap = [
+  { "company_name": "Apple Inc.", "ticker_symbol": "AAPL" },
+  { "company_name": "Microsoft Corporation", "ticker_symbol": "MSFT" },
+  { "company_name": "Amazon.com Inc.", "ticker_symbol": "AMZN" },
+  { "company_name": "Alphabet Inc. (Google)", "ticker_symbol": "GOOGL" },
+  { "company_name": "Meta Platforms Inc. (Facebook)", "ticker_symbol": "META" },
+  { "company_name": "NVIDIA Corporation", "ticker_symbol": "NVDA" },
+  { "company_name": "Tesla Inc.", "ticker_symbol": "TSLA" },
+  { "company_name": "Berkshire Hathaway Inc.", "ticker_symbol": "BRK.B" },
+  { "company_name": "Visa Inc.", "ticker_symbol": "V" },
+  { "company_name": "Netflix Inc.", "ticker_symbol": "NFLX" }
+]
 
-const companyName = computed(() => companyMap[ticker.value] || '')
+
+const companyName = computed(() => {
+  const found = companyMap.find(c => c.ticker_symbol === ticker.value)
+  return found ? found.company_name : ''
+})
 
 const exchangeRates = [
-  { country: 'United States', id: 'USD', exchange_rate_per_usd: 1.00 },
-  { country: 'Indonesia', id: 'IDR', exchange_rate_per_usd: 15000.00 },
-  { country: 'United Arab Emirates', id: 'AED', exchange_rate_per_usd: 3.67 },
-  { country: 'Saudi Arabia', id: 'SAR', exchange_rate_per_usd: 3.75 },
-  { country: 'Egypt', id: 'EGP', exchange_rate_per_usd: 30.90 },
-  { country: 'Eurozone', id: 'EUR', exchange_rate_per_usd: 0.92 },
-  { country: 'Japan', id: 'JPY', exchange_rate_per_usd: 140.00 },
-  { country: 'China', id: 'CNY', exchange_rate_per_usd: 7.20 },
-  { country: 'United Kingdom', id: 'GBP', exchange_rate_per_usd: 0.79 },
-  { country: 'India', id: 'INR', exchange_rate_per_usd: 82.00 }
+    { country: 'United States', id: 'USD', exchange_rate_per_usd: 1.00 },
+    { country: 'Indonesia', id: 'IDR', exchange_rate_per_usd: 15000.00 },
+    { country: 'United Arab Emirates', id: 'AED', exchange_rate_per_usd: 3.67 },
+    { country: 'Saudi Arabia', id: 'SAR', exchange_rate_per_usd: 3.75 },
+    { country: 'Egypt', id: 'EGP', exchange_rate_per_usd: 30.90 },
+    { country: 'Eurozone', id: 'EUR', exchange_rate_per_usd: 0.92 },
+    { country: 'Japan', id: 'JPY', exchange_rate_per_usd: 140.00 },
+    { country: 'China', id: 'CNY', exchange_rate_per_usd: 7.20 },
+    { country: 'United Kingdom', id: 'GBP', exchange_rate_per_usd: 0.79 },
+    { country: 'India', id: 'INR', exchange_rate_per_usd: 82.00 }
 ]
 
 const getRate = (id) => {
-  const r = exchangeRates.find(x => x.id === id)
-  return r ? Number(r.exchange_rate_per_usd) : 1
+    const r = exchangeRates.find(x => x.id === id)
+    return r ? Number(r.exchange_rate_per_usd) : 1
 }
 
 const conversionFactor = computed(() => {
-  const rateAssumed = getRate(assumed.value || 'USD')
-  const rateConverte = getRate(converte.value || 'USD')
-  return rateConverte / rateAssumed
+    const rateAssumed = getRate(assumed.value || 'USD')
+    const rateConverte = getRate(converte.value || 'USD')
+    return rateConverte / rateAssumed
 })
 
 const convertedTimeSeries = computed(() =>
-  timeSeries.value.map(row => {
-    const f = conversionFactor.value
-    const toNum = v => {
-      if (v == null) return 0
-      return Number(String(v).replace(/,/g, ''))
-    }
-    return {
-      date: row.date,
-      open: (toNum(row.open) * f).toFixed(2),
-      high: (toNum(row.high) * f).toFixed(2),
-      low: (toNum(row.low) * f).toFixed(2),
-      close: (toNum(row.close) * f).toFixed(2),
-      volume: Math.round(toNum(row.volume) * f)
-    }
-  })
+    timeSeries.value.map(row => {
+        const f = conversionFactor.value
+        const toNum = v => {
+            if (v == null) return 0
+            return Number(String(v).replace(/,/g, ''))
+        }
+        return {
+            date: row.date,
+            open: (toNum(row.open) * f).toFixed(2),
+            high: (toNum(row.high) * f).toFixed(2),
+            low: (toNum(row.low) * f).toFixed(2),
+            close: (toNum(row.close) * f).toFixed(2),
+            volume: Math.round(toNum(row.volume) * f)
+        }
+    })
 )
 
 const apiKey = 'U2A8C3EMLYAEA3XR'
@@ -136,48 +140,27 @@ async function fetchData() {
             <label>
                 Ticker
                 <select v-model="ticker">
-                    <option value="AAPL">Apple Inc.</option>
-                    <option value="MSFT">Microsoft Corporation</option>
-                    <option value="AMZN">Amazon.com Inc.</option>
-                    <option value="GOOGL">Alphabet Inc. (Google)</option>
-                    <option value="META">Meta Platforms Inc. (Facebook)</option>
-                    <option value="NVDA">NVIDIA Corporation</option>
-                    <option value="TSLA">Tesla Inc.</option>
-                    <option value="BRK.B">Berkshire Hathaway Inc.</option>
-                    <option value="V">Visa Inc.</option>
-                    <option value="NFLX">Netflix Inc.</option>
+                    <option v-for="item in companyMap" :key="item.ticker_symbol" :value="item.ticker_symbol">
+                        {{ item.company_name }}
+                    </option>
                 </select>
             </label>
 
             <label>
                 Assumed
                 <select v-model="assumed">
-                    <option value="USD">USD</option>
-                    <option value="IDR">IDR</option>
-                    <option value="AED">AED</option>
-                    <option value="SAR">SAR</option>
-                    <option value="EGP">EGP</option>
-                    <option value="EUR">EUR</option>
-                    <option value="JPY">JPY</option>
-                    <option value="CNY">CNY</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
+                    <option v-for="rate in exchangeRates" :key="rate.id" :value="rate.id">
+                        {{ rate.id }}
+                    </option>
                 </select>
             </label>
 
             <label>
                 Converte
                 <select v-model="converte">
-                    <option value="USD">USD</option>
-                    <option value="IDR">IDR</option>
-                    <option value="AED">AED</option>
-                    <option value="SAR">SAR</option>
-                    <option value="EGP">EGP</option>
-                    <option value="EUR">EUR</option>
-                    <option value="JPY">JPY</option>
-                    <option value="CNY">CNY</option>
-                    <option value="GBP">GBP</option>
-                    <option value="INR">INR</option>
+                     <option v-for="rate in exchangeRates" :key="rate.id" :value="rate.id">
+                        {{ rate.id }}
+                    </option>
                 </select>
             </label>
 
@@ -223,26 +206,28 @@ async function fetchData() {
                 </tbody>
             </table>
             <h3>Converte Price</h3>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Open ({{ converte }} Converte)</th>
-                    <th>High ({{ converte }} Converte)</th>
-                    <th>Low ({{ converte }} Converte)</th>
-                    <th>Close ({{ converte }} Converte)</th>
-                    <th>Volume ({{ converte }} Converte)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="row in convertedTimeSeries.slice(0, 50)" :key="row.date">
-                    <td>{{ row.date }}</td>
-                    <td>{{ row.open }}</td>
-                    <td>{{ row.high }}</td>
-                    <td>{{ row.low }}</td>
-                    <td>{{ row.close }}</td>
-                    <td>{{ row.volume }}</td>
-                </tr>
-            </tbody>
+            <table class="results">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Open ({{ converte }} Converte)</th>
+                        <th>High ({{ converte }} Converte)</th>
+                        <th>Low ({{ converte }} Converte)</th>
+                        <th>Close ({{ converte }} Converte)</th>
+                        <th>Volume ({{ converte }} Converte)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="row in convertedTimeSeries.slice(0, 50)" :key="row.date">
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.open }}</td>
+                        <td>{{ row.high }}</td>
+                        <td>{{ row.low }}</td>
+                        <td>{{ row.close }}</td>
+                        <td>{{ row.volume }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </template>
 
         <div v-else class="empty">No data yet.</div>
